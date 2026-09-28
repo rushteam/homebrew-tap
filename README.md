@@ -18,8 +18,10 @@ Homebrew adds the tap on first install. `brew upgrade` then covers every app ins
 
 Some apps here are not yet signed with an Apple Developer ID or notarized. Their casks clear the
 macOS quarantine flag after installing so Gatekeeper does not refuse the app, and each such
-cask says so in its caveats. Adding this tap means trusting every cask in it, so changes land
-only through reviewed pull requests.
+cask says so in its caveats. Adding this tap means trusting every cask in it. Cask changes land
+through reviewed pull requests. The AiOpt cask is the exception for its
+version and sha256: the Sync AiOpt cask workflow commits those after a
+Release is published, and opens a pull request for any other difference.
 
 ## Adding an app
 

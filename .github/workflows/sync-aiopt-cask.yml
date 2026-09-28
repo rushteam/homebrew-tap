@@ -1,0 +1,85 @@
+# Bump Casks/aiopt.rb from the latest published Release of rushteam/aiopt.
+# Drafts and prereleases are ignored. A change of only version and sha256 is
+# committed here; any other difference opens a pull request. The cask body
+# comes from packaging/homebrew/aiopt.rb on main of rushteam/aiopt.
+name: Sync AiOpt cask
+
+on:
+  schedule:
+    - cron: '17 */6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: sync-aiopt-cask
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    if: github.repository == 'rushteam/homebrew-tap'
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check the sync script
+        run: python3 scripts/sync_aiopt_cask.py --self-test
+
+      - name: Update the cask from the latest published Release
+        id: sync
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 scripts/sync_aiopt_cask.py
+
+      - name: Confirm the token can update this repository
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          push="$(gh api repos/rushteam/homebrew-tap --jq '.permissions.push')"
+          echo "token push permission: ${push}"
+          test "${push}" = "true"
+
+      - name: Audit and install the cask
+        if: steps.sync.outputs.mode == 'bump' || steps.sync.outputs.mode == 'review'
+        env:
+          HOMEBREW_NO_AUTO_UPDATE: '1'
+          HOMEBREW_NO_ENV_HINTS: '1'
+        run: |
+          brew tap rushteam/tap
+          tap_dir="$(brew --repository rushteam/tap)"
+          cp Casks/aiopt.rb "${tap_dir}/Casks/aiopt.rb"
+          brew style --cask rushteam/tap/aiopt
+          brew audit --cask --strict --online rushteam/tap/aiopt
+          brew install --cask rushteam/tap/aiopt
+
+      - name: Commit version and checksum
+        if: steps.sync.outputs.mode == 'bump'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add Casks/aiopt.rb
+          git commit -m "cask: bump aiopt to ${{ steps.sync.outputs.version }}"
+          git push origin HEAD:main
+
+      - name: Open a pull request for any other cask change
+        if: steps.sync.outputs.mode == 'review'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          branch="cask-sync/${{ steps.sync.outputs.version }}"
+          open="$(gh pr list --head "${branch}" --state open --json number --jq 'length')"
+          if [ "${open}" != "0" ]; then
+            echo "review pull request already open for ${branch}"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b "${branch}"
+          git add Casks/aiopt.rb
+          git commit -m "cask: update aiopt to ${{ steps.sync.outputs.version }}"
+          git push --set-upstream origin HEAD
+          gh pr create \
+            --title "cask: update aiopt to ${{ steps.sync.outputs.version }}" \
+            --body "The cask body on rushteam/aiopt main differs from this tap by more than version and sha256. The published dmg was checked against GitHub's asset digest. Review the diff before merging."
