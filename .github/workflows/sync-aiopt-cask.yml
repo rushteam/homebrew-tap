@@ -50,9 +50,12 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
+      # `brew audit --online` queries the GitHub API. Unauthenticated, it shares the
+      # runner IP's 60-request hourly limit and fails with "API rate limit exceeded".
       - name: Audit and install the cask
         if: steps.sync.outputs.mode == 'bump' || steps.sync.outputs.mode == 'review'
         env:
+          HOMEBREW_GITHUB_API_TOKEN: ${{ github.token }}
           HOMEBREW_NO_AUTO_UPDATE: '1'
           HOMEBREW_NO_ENV_HINTS: '1'
         run: |
