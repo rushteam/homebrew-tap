@@ -3,10 +3,14 @@
 Homebrew tap for RushTeam apps.
 
 ```sh
+brew tap rushteam/tap
+brew trust --cask rushteam/tap/<name>
 brew install --cask rushteam/tap/<name>
 ```
 
-Homebrew adds the tap on first install. `brew upgrade` then covers every app installed from it.
+Recent Homebrew refuses casks from a tap you have not trusted, so trust the cask (or the
+whole tap with `brew trust --tap rushteam/tap`) before installing. `brew upgrade` then covers
+every app installed from it.
 
 ## Casks
 
