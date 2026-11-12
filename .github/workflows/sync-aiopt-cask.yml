@@ -60,6 +60,8 @@ jobs:
           HOMEBREW_NO_ENV_HINTS: '1'
         run: |
           brew tap rushteam/tap
+          # Recent Homebrew refuses casks from an untrusted third-party tap. Trust only this cask.
+          brew trust --cask rushteam/tap/aiopt
           tap_dir="$(brew --repository rushteam/tap)"
           cp Casks/aiopt.rb "${tap_dir}/Casks/aiopt.rb"
           brew style --cask rushteam/tap/aiopt
