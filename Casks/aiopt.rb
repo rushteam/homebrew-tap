@@ -11,8 +11,8 @@
 # download; otherwise Gatekeeper refuses the app as "damaged". Official homebrew/cask rejects a
 # cask that bypasses Gatekeeper. Once the builds are signed and notarized, drop the postflight.
 cask "aiopt" do
-  version "1.0.36"
-  sha256 "379000fdedc68ae4bbc446366eb23a17bf820bd1fa61c1393937c834032c2a20"
+  version "1.0.41"
+  sha256 "1122bb527819ec20185477acae7e2654b6afd9a9458e9ff1ef38d095d834432d"
 
   url "https://github.com/rushteam/aiopt/releases/download/v#{version}/AiOpt-#{version}-arm64.dmg"
   name "AiOpt"
